@@ -1,0 +1,65 @@
+@startuml
+class User {
+  + id: int [PK]
+  + username: string
+  + email: string
+  + password: string (hashed)
+  + is_active: boolean
+  + date_joined: datetime
+}
+
+class Workout {
+  + id: int [PK]
+  + title: string
+  + description: text
+  + created_at: datetime
+  + updated_at: datetime
+  + author: User [FK]
+  + difficulty: string
+  + muscle_group: string
+  + duration: int (optional)
+  + calories: int (optional)
+  + equipment_needed: string (optional)
+}
+
+class WorkoutRating {
+  + id: int [PK]
+  + user: User [FK]
+  + workout: Workout [FK]
+  + rating: int (1-5)
+  + review: text
+  + created_at: datetime
+}
+
+class SavedWorkout {
+  + id: int [PK]
+  + user: User [FK]
+  + workout: Workout [FK]
+  + saved_at: datetime
+}
+
+class Exercise {
+  + id: int [PK]
+  + name: string
+  + description: text
+  + muscle_group: string
+}
+
+class WorkoutExercise {
+  + id: int [PK]
+  + workout: Workout [FK]
+  + exercise: Exercise [FK]
+  + sets: int
+  + reps: int
+  + rest: int (seconds)
+  + order: int
+}
+
+User "1" --> "*" Workout : creates
+User "1" --> "*" WorkoutRating : rates
+User "1" --> "*" SavedWorkout : saves
+Workout "1" --> "*" WorkoutRating : has ratings
+Workout "1" --> "*" SavedWorkout : saved by
+Workout "1" --> "*" WorkoutExercise : contains
+Exercise "1" --> "*" WorkoutExercise : linked to
+@enduml

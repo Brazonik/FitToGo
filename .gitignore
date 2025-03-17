@@ -1,0 +1,15 @@
+env/
+# Ignore Python compiled files
+__pycache__/
+*.pyc
+
+# Ignore virtual environment
+venv/
+env/
+
+# Ignore Node.js dependencies
+node_modules/
+
+# Ignore build output
+dist/
+build/

@@ -1,0 +1,158 @@
+{% extends "workouts/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="content-section" x-data="workoutBuilder()">
+  <form method="POST" id="workoutForm" @submit="updateDescription()">
+    {% csrf_token %}
+    <fieldset class="form-group">
+      <legend class="border-bottom mb-4">Create New Workout</legend>
+              
+      <div class="row">
+        <div class="col-md-12">
+          {{ form.title|as_crispy_field }}
+        </div>
+      </div>
+              
+      <div class="row">
+        <div class="col-md-6">
+          {{ form.difficulty|as_crispy_field }}
+        </div>
+        <div class="col-md-6">
+          {{ form.muscle_group|as_crispy_field }}
+        </div>
+      </div>
+      
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Exercise Builder</h5>
+        </div>
+        <div class="card-body">
+          <div id="exercisesContainer">
+            <template x-for="(exercise, index) in exercises" :key="index">
+              <div class="exercise-entry mb-3">
+                <div class="row mb-2">
+                  <div class="col-10">
+                    <input type="text" class="form-control exercise-name" x-model="exercise.name" placeholder="Exercise Name" @input="updateDescription()">
+                  </div>
+                  <div class="col-2 pl-0">
+                    <button type="button" class="btn btn-danger btn-block remove-exercise" @click="removeExercise(index)">
+                      ×
+                    </button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-4 mb-2">
+                    <input type="text" class="form-control exercise-sets" x-model="exercise.sets" placeholder="Sets" @input="updateDescription()">
+                  </div>
+                  <div class="col-md-4 mb-2">
+                    <input type="text" class="form-control exercise-reps" x-model="exercise.reps" placeholder="Reps" @input="updateDescription()">
+                  </div>
+                  <div class="col-md-4 mb-2">
+                    <input type="text" class="form-control exercise-rest" x-model="exercise.rest" placeholder="Rest (sec)" @input="updateDescription()">
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+          
+          <button type="button" class="btn btn-success mt-3" @click="addExercise()">
+            <i class="fas fa-plus"></i> Add Exercise
+          </button>
+        </div>
+      </div>
+      
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Provide a detailed description of your workout. Consider including:
+        <ul>
+          <li>Number of sets and reps</li>
+          <li>Rest periods</li>
+          <li>Equipment needed</li>
+          <li>Target muscle groups</li>
+          <li>Proper form instructions</li>
+          <li>Any additional notes or advice</li>
+
+        </ul>
+      </div>
+              
+      {{ form.description|as_crispy_field }}
+    </fieldset>
+          
+    <div class="form-group">
+      <button class="btn btn-primary" type="submit" :disabled="isSubmitting">
+        <span x-show="isSubmitting" class="spinner-border spinner-border-sm mr-2"></span>
+        <span x-text="isSubmitting ? 'Creating...' : 'Create Workout'"></span>
+      </button>
+      <a href="{% url 'workouts-home' %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  function workoutBuilder() {
+    return {
+      exercises: [
+        { name: '', sets: '', reps: '', rest: '' }
+      ],
+      isSubmitting: false,
+      
+      addExercise() {
+        this.exercises.push({ name: '', sets: '', reps: '', rest: '' });
+        this.$nextTick(() => {
+          this.updateDescription();
+        });
+      },
+      
+      removeExercise(index) {
+        if (this.exercises.length > 1) {
+          this.exercises.splice(index, 1);
+          this.updateDescription();
+        } else {
+          this.exercises[0] = { name: '', sets: '', reps: '', rest: '' };
+          this.updateDescription();
+        }
+      },
+      
+      updateDescription() {
+        const descriptionField = document.getElementById('{{ form.description.id_for_label }}');
+        let exerciseListText = '';
+        
+        this.exercises.forEach((exercise, index) => {
+          if (exercise.name.trim()) {
+            exerciseListText += `${index + 1}. ${exercise.name}`;
+            
+            const details = [];
+            if (exercise.sets) details.push(`${exercise.sets} sets`);
+            if (exercise.reps) details.push(`${exercise.reps} reps`);
+            if (exercise.rest) details.push(`${exercise.rest}s rest`);
+            
+            if (details.length > 0) {
+              exerciseListText += ` - ${details.join(', ')}`;
+            }
+            
+            exerciseListText += '\n';
+          }
+        });
+        
+        let currentText = descriptionField.value || '';
+        
+        const exerciseListRegex = /EXERCISES:[\s\S]*?(?=(\n\n|$))/;
+        const exerciseListMatch = currentText.match(exerciseListRegex);
+        
+        if (exerciseListText.trim()) {
+          exerciseListText = "EXERCISES:\n" + exerciseListText;
+          
+          if (exerciseListMatch) {
+            descriptionField.value = currentText.replace(exerciseListRegex, exerciseListText);
+          } else {
+            if (currentText.trim()) {
+              descriptionField.value = currentText.trim() + "\n\n" + exerciseListText;
+            } else {
+              descriptionField.value = exerciseListText;
+            }
+          }
+        }
+      }
+    }
+  }
+</script>
+{% endblock content %}

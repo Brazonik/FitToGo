@@ -1,0 +1,286 @@
+{% extends "workouts/base.html" %}
+{% block content %}
+<div x-data="workoutDetail({{ object.id }})" x-init="initPage()">
+  {% csrf_token %}
+  {% if user.is_authenticated %}
+    <div class="mb-3">
+      <button 
+        @click="toggleSave" 
+        :class="isSaved ? 'btn btn-sm btn-warning' : 'btn btn-sm btn-primary'"
+        :disabled="saveLoading">
+        <span x-show="saveLoading" class="spinner-border spinner-border-sm mr-1"></span>
+        <i :class="isSaved ? 'fas fa-bookmark' : 'far fa-bookmark'"></i>
+        <span x-text="isSaved ? 'Unsave Workout' : 'Save Workout'"></span>
+      </button>
+    </div>
+  {% endif %}
+
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between">
+      <div>
+        <h2>{{ object.title }}</h2>
+        <div class="rating-stars" x-show="hasRatings">
+          <template x-for="star in 5" :key="star">
+            <i :class="star <= Math.round(averageRating) ? 'fas fa-star text-warning' : 'far fa-star text-white'"></i>
+          </template>
+          <span class="ml-2" x-text="`${averageRating.toFixed(1)} (${ratingCount} reviews)`"></span>
+        </div>
+      </div>
+      {% if object.author == user %}
+        <div>
+          <a class="btn btn-light btn-sm mt-1" href="{% url 'workouts-update' object.id %}">Update</a>
+          <a class="btn btn-light btn-sm mt-1" 
+             @click.prevent="showDeleteModal = true" 
+             href="#"
+             role="button">Delete</a>
+        </div>
+      {% endif %}
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <p><strong>Created by:</strong> {{ object.author }}</p>
+          <p><strong>Difficulty:</strong> <span class="badge badge-info">{{ object.difficulty }}</span></p>
+          <p><strong>Muscle Group:</strong> <span class="badge badge-primary">{{ object.muscle_group }}</span></p>
+        </div>
+        <div class="col-md-6">
+          {% if object.duration %}
+          <p><strong>Duration:</strong> {{ object.duration }} minutes</p>
+          {% endif %}
+          {% if object.calories %}
+          <p><strong>Calories:</strong> {{ object.calories }} kcal</p>
+          {% endif %}
+          {% if object.equipment_needed %}
+          <p><strong>Equipment:</strong> {{ object.equipment_needed }}</p>
+          {% endif %}
+          
+          {% if user.is_authenticated and object.author != user %}
+            <div>
+              <button @click="showRatingForm = !showRatingForm" class="btn btn-sm btn-outline-primary">
+                <span x-text="userRating ? 'Update Your Rating' : 'Rate This Workout'"></span>
+              </button>
+            </div>
+            
+            <div x-show="showRatingForm" class="mt-3 p-3 border rounded">
+              <form @submit.prevent="submitRating">
+                <div class="form-group">
+                  <label>Your Rating:</label>
+                  <div class="rating-input">
+                    <template x-for="star in 5" :key="star">
+                      <i @click="newRating = star" 
+                         :class="star <= newRating ? 'fas fa-star text-warning' : 'far fa-star'" 
+                         style="cursor: pointer; font-size: 1.5rem; margin-right: 5px;"></i>
+                    </template>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="review">Review (optional):</label>
+                  <textarea x-model="newReview" class="form-control" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm" :disabled="ratingLoading">
+                  <span x-show="ratingLoading" class="spinner-border spinner-border-sm mr-1"></span>
+                  Submit Rating
+                </button>
+                <button type="button" @click="showRatingForm = false" class="btn btn-light btn-sm ml-2">
+                  Cancel
+                </button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <h4>Workout Description</h4>
+      <div class="workout-description mb-4">
+        {{ object.description|linebreaks }}
+      </div>
+      
+      <hr>
+      <div class="mt-4">
+        <h4>Ratings & Reviews</h4>
+        <div x-show="loadingReviews" class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading reviews...</span>
+          </div>
+        </div>
+        
+        <template x-if="!loadingReviews && ratings.length > 0">
+          <div>
+            <template x-for="rating in ratings" :key="rating.id">
+              <div class="card mb-2">
+                <div class="card-header d-flex justify-content-between">
+                  <span x-text="rating.username"></span>
+                  <span>
+                    <template x-for="star in 5" :key="star">
+                      <i :class="star <= rating.rating ? 'fas fa-star text-warning' : 'far fa-star text-muted'"></i>
+                    </template>
+                  </span>
+                </div>
+                <template x-if="rating.review">
+                  <div class="card-body">
+                    <p class="mb-0" x-text="rating.review"></p>
+                    <small class="text-muted" x-text="formatDate(rating.created_at)"></small>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+        
+        <template x-if="!loadingReviews && ratings.length === 0">
+          <p class="text-muted">No ratings yet. Be the first to rate this workout!</p>
+        </template>
+      </div>
+      
+      <small class="text-muted">Last updated: {{ object.updated_at|date:"F d, Y" }}</small>
+    </div>
+  </div>
+  
+  <!-- Delete Confirmation Modal -->
+  <div x-show="showDeleteModal" class="modal" tabindex="-1" style="display: block;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm Deletion</h5>
+          <button @click="showDeleteModal = false" type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete this workout? This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button @click="showDeleteModal = false" type="button" class="btn btn-secondary">Cancel</button>
+          <button @click="deleteWorkout" type="button" class="btn btn-danger" :disabled="deleteLoading">
+            <span x-show="deleteLoading" class="spinner-border spinner-border-sm mr-1"></span>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+  </div>
+</div>
+
+<script>
+  function workoutDetail(workoutId) {
+    return {
+      workoutId: workoutId,
+      isSaved: {{ is_saved|yesno:"true,false" }},
+      averageRating: {{ average_rating|default:"0" }},
+      ratingCount: {{ workout_ratings.count|default:"0" }},
+      ratings: [],
+      userRating: {{ user_rating.rating|default:"0" }},
+      newRating: {{ user_rating.rating|default:"0" }},
+      newReview: "{{ user_rating.review|default:'' }}",
+      showRatingForm: false,
+      showDeleteModal: false,
+      saveLoading: false,
+      ratingLoading: false,
+      deleteLoading: false,
+      loadingReviews: true,
+      hasRatings: {{ workout_ratings.count|default:"0" }} > 0,
+      
+      initPage() {
+        this.fetchRatings();
+      },
+      
+      async fetchRatings() {
+        try {
+          const response = await fetch(`/api/workout/${this.workoutId}/ratings/`);
+          const data = await response.json();
+          this.ratings = data.ratings;
+          this.averageRating = data.average_rating;
+          this.ratingCount = data.count;
+          this.hasRatings = this.ratingCount > 0;
+        } catch (error) {
+          console.error("Error fetching ratings:", error);
+        } finally {
+          this.loadingReviews = false;
+        }
+      },
+      
+      async toggleSave() {
+        this.saveLoading = true;
+        try {
+          const url = this.isSaved 
+            ? `/workout/${this.workoutId}/unsave/` 
+            : `/workout/${this.workoutId}/save/`;
+            
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            this.isSaved = !this.isSaved;
+          }
+        } catch (error) {
+          console.error("Error toggling save status:", error);
+        } finally {
+          this.saveLoading = false;
+        }
+      },
+      
+      async submitRating() {
+        if (!this.newRating) {
+          alert("Please select a rating");
+          return;
+        }
+        
+        this.ratingLoading = true;
+        try {
+          const formData = new FormData();
+          formData.append('rating', this.newRating);
+          formData.append('review', this.newReview || '');
+          formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+          
+          const response = await fetch(`/workout/${this.workoutId}/rate/`, {
+            method: 'POST',
+            body: formData
+          });
+          
+          if (response.ok) {
+            this.showRatingForm = false;
+            this.userRating = this.newRating;
+            await this.fetchRatings();
+          }
+        } catch (error) {
+          console.error("Error submitting rating:", error);
+        } finally {
+          this.ratingLoading = false;
+        }
+      },
+      
+      async deleteWorkout() {
+        this.deleteLoading = true;
+        try {
+          const response = await fetch(`/workout/${this.workoutId}/delete`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            window.location.href = '/';
+          }
+        } catch (error) {
+          console.error("Error deleting workout:", error);
+          this.deleteLoading = false;
+          this.showDeleteModal = false;
+        }
+      },
+      
+      formatDate(dateString) {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('en-US', options);
+      }
+    };
+  }
+</script>
+{% endblock content %}

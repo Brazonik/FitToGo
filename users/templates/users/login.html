@@ -1,0 +1,107 @@
+{% extends "workouts/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div x-data="loginForm()" class="content-section">
+  <form @submit.prevent="submitForm">
+    {% csrf_token %}
+    <fieldset class="form-group">
+      <legend class="border-bottom mb-4">Log In</legend>
+      <div id="div_id_username" class="form-group">
+        <label for="id_username" class="control-label">Username</label>
+        <div class="controls">
+          <input type="text" name="username" id="id_username" 
+                 class="textinput textInput form-control" 
+                 x-model="username" required>
+        </div>
+      </div>
+      <div id="div_id_password" class="form-group">
+        <label for="id_password" class="control-label">Password</label>
+        <div class="controls">
+          <input type="password" name="password" id="id_password" 
+                 class="textinput textInput form-control" 
+                 x-model="password" required>
+        </div>
+      </div>
+    </fieldset>
+    
+    <div class="form-group py-3">
+      <button class="btn btn-outline-info" type="submit" :disabled="isSubmitting">
+        <span x-show="isSubmitting" class="spinner-border spinner-border-sm mr-2" role="status"></span>
+        <span x-text="isSubmitting ? 'Logging in...' : 'Login'"></span>
+      </button>
+      <small class="text-muted ml-2">
+        <a href="{% url 'password_reset' %}">Forgot Password?</a>
+      </small>
+    </div>
+    
+    <div x-show="errors.length > 0" class="alert alert-danger">
+      <template x-for="error in errors" :key="error">
+        <p x-text="error"></p>
+      </template>
+    </div>
+  </form>
+  
+  <div class="border-top pt-3">
+    <a class="text-muted" href="{% url 'register' %}">Don't have an account? Sign up.</a>
+  </div>
+</div>
+
+<script>
+function loginForm() {
+  return {
+    username: '',
+    password: '',
+    isSubmitting: false,
+    errors: [],
+    
+    async submitForm() {
+      this.isSubmitting = true;
+      this.errors = [];
+      
+      if (!this.username) {
+        this.errors.push('Username is required');
+      }
+      
+      if (!this.password) {
+        this.errors.push('Password is required');
+      }
+      
+      if (this.errors.length > 0) {
+        this.isSubmitting = false;
+        return;
+      }
+      
+      try {
+        const formData = new FormData();
+        formData.append('username', this.username);
+        formData.append('password', this.password);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        console.log("Submitting login with username:", this.username);
+        
+        const response = await fetch('/api/login/', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+        
+        const result = await response.json();
+        console.log("Login response:", result);
+        
+        if (response.ok) {
+          window.location.href = result.redirect || '/';
+        } else {
+          this.errors = result.errors || ['Login failed. Please try again.'];
+        }
+      } catch (error) {
+        console.error("Login error:", error);
+        this.errors = ['Network error. Please check your connection.'];
+      } finally {
+        this.isSubmitting = false;
+      }
+    }
+  };
+}
+</script>
+{% endblock content %}

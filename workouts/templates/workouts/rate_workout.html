@@ -1,0 +1,19 @@
+{% extends "workouts/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="content-section">
+  <h2>Rate Workout</h2>
+  <h4 class="text-muted mb-3">{{ workout.title }}</h4>
+  
+  <form method="POST">
+    {% csrf_token %}
+    <fieldset class="form-group">
+      {{ form|crispy }}
+    </fieldset>
+    <div class="form-group">
+      <button class="btn btn-primary" type="submit">Submit Rating</button>
+      <a href="{% url 'workouts-detail' workout.id %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock content %}

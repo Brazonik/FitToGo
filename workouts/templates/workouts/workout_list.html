@@ -1,0 +1,166 @@
+{% extends "workouts/base.html" %}
+{% load static %}
+
+{% block content %}
+<div x-data="workoutList()" class="container mt-4">
+    <h1>Workouts</h1>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-2">
+                    <select 
+                        x-model="filters.difficulty" 
+                        class="form-control"
+                    >
+                        <option value="">All Difficulties</option>
+                        <template x-for="[key, value] in difficultyChoices" :key="key">
+                            <option :value="key" x-text="value"></option>
+                        </template>
+                    </select>
+                </div>
+                
+                <div class="col-md-4 mb-2">
+                    <select 
+                        x-model="filters.muscleGroup" 
+                        class="form-control"
+                    >
+                        <option value="">All Muscle Groups</option>
+                        <template x-for="[key, value] in muscleGroupChoices" :key="key">
+                            <option :value="key" x-text="value"></option>
+                        </template>
+                    </select>
+                </div>
+                
+                <div class="col-md-4 mb-2">
+                    <div class="d-flex">
+                        <button 
+                            type="button" 
+                            class="btn btn-primary mr-2"
+                            @click="fetchWorkouts()"
+                        >
+                            Filter
+                        </button>
+                        <button 
+                            type="button" 
+                            class="btn btn-outline-secondary ml-2"
+                            @click="clearFilters()"
+                            x-show="filters.difficulty || filters.muscleGroup"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div x-show="loading" class="text-center py-4">
+        <div class="spinner-border text-info" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading workouts...</p>
+    </div>
+    
+    <div x-show="!loading">
+        <template x-for="workout in workouts" :key="workout.id">
+            <article class="media content-section">
+                <div class="media-body">
+                    <div class="article-metadata">
+                        <a class="mr-2" href="#" x-text="workout.author_username"></a>
+                        <small class="text-muted" x-text="formatDate(workout.created_at)"></small>
+                        <span class="badge badge-info" x-text="workout.difficulty"></span>
+                        <span class="badge badge-primary" x-text="workout.muscle_group"></span>
+                    </div>
+                    <h2><a class="article-title" :href="'/workout/' + workout.id + '/'" x-text="workout.title"></a></h2>
+                    <p class="article-content" x-text="workout.description"></p>
+                </div>
+            </article>
+        </template>
+        
+        <div x-show="workouts.length === 0" class="alert alert-info">
+            No workouts found matching your criteria.
+            <template x-if="filters.difficulty || filters.muscleGroup">
+                <a href="#" @click.prevent="clearFilters()">Clear filters</a> to see all workouts.
+            </template>
+            <template x-if="!(filters.difficulty || filters.muscleGroup)">
+                <div>
+                    <p>No workouts have been added yet.</p>
+                    <a href="{% url 'workouts-create' %}" class="btn btn-primary">Create a Workout</a>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+
+<script>
+    function workoutList() {
+        return {
+            workouts: [],
+            loading: true,
+            filters: {
+                difficulty: '',
+                muscleGroup: ''
+            },
+            difficultyChoices: [],
+            muscleGroupChoices: [],
+            
+            init() {
+                console.log('Alpine component initialized');
+                this.fetchChoices();
+                this.fetchWorkouts();
+            },
+            
+            async fetchChoices() {
+                try {
+                    const response = await fetch('/api/choices/');
+                    const data = await response.json();
+                    this.difficultyChoices = data.difficulty_choices;
+                    this.muscleGroupChoices = data.muscle_group_choices;
+                } catch (error) {
+                    console.error('Error fetching choices:', error);
+                }
+            },
+            
+            async fetchWorkouts() {
+                this.loading = true;
+                try {
+                    const params = new URLSearchParams();
+                    if (this.filters.difficulty) params.append('difficulty', this.filters.difficulty);
+                    if (this.filters.muscleGroup) params.append('muscle_group', this.filters.muscleGroup);
+                    
+                    const response = await fetch(`/api/workouts/?${params.toString()}`);
+                    const data = await response.json();
+                    
+                    console.log('Workout data from API:', data);
+                    
+                    this.workouts = data.results || data;
+                } catch (error) {
+                    console.error('Error fetching workouts:', error);
+                } finally {
+                    this.loading = false;
+                }
+            },
+            
+            clearFilters() {
+                this.filters.difficulty = '';
+                this.filters.muscleGroup = '';
+                this.fetchWorkouts();
+            },
+            
+            formatDate(dateString) {
+                return new Date(dateString).toLocaleDateString('en-US', {
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric'
+                });
+            },
+            
+            truncate(text, length) {
+                if (!text) return '';
+                return text.length > length ? text.substring(0, length) + '...' : text;
+            }
+        }
+    }
+</script>
+{% endblock content %}

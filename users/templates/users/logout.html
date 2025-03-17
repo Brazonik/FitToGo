@@ -1,0 +1,51 @@
+{% extends "workouts/base.html" %}
+{% block content %}
+<div class="container" x-data="logoutPage()" x-init="startCountdown()">
+  <div class="card border-success mb-3">
+    <div class="card-header bg-success text-white">
+      <i class="fas fa-check-circle mr-2"></i> Logged Out Successfully
+    </div>
+    <div class="card-body">
+      <h2 class="card-title">You have been logged out!</h2>
+      <p class="card-text">Thank you for using Fit To Go. We hope to see you again soon!</p>
+      
+      <div class="progress mb-3" x-show="countdown < 10">
+        <div class="progress-bar bg-info" :style="`width: ${(10-countdown) * 10}%`"></div>
+      </div>
+      
+      <p x-show="countdown > 0">
+        Redirecting to login page in <span x-text="countdown"></span> seconds...
+        <button @click="stopRedirect" class="btn btn-sm btn-outline-secondary">Stay on this page</button>
+      </p>
+    </div>
+  </div>
+  
+  <div class="border-top pt-3">
+    <a class="text-muted" href="{% url 'login' %}">Log back in here.</a>
+  </div>
+</div>
+
+<script>
+  function logoutPage() {
+    return {
+      countdown: 10,
+      redirectTimer: null,
+      
+      startCountdown() {
+        this.redirectTimer = setInterval(() => {
+          this.countdown--;
+          if (this.countdown <= 0) {
+            clearInterval(this.redirectTimer);
+            window.location.href = "{% url 'login' %}";
+          }
+        }, 1000);
+      },
+      
+      stopRedirect() {
+        clearInterval(this.redirectTimer);
+        this.countdown = 0;
+      }
+    }
+  }
+</script>
+{% endblock content %}

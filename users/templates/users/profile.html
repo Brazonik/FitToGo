@@ -1,0 +1,139 @@
+{% extends "workouts/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div x-data="profilePage()" class="container">
+  <div class="content-section">
+    <div class="media">
+      <div class="media-body">
+        <h2 class="account-heading">{{ user.username }}</h2>
+        <p class="text-secondary">{{ user.email }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" 
+           :class="{ 'active': activeTab === 'my-workouts' }" 
+           @click.prevent="activeTab = 'my-workouts'" 
+           href="#my-workouts" 
+           role="tab">My Workouts</a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" 
+           :class="{ 'active': activeTab === 'saved-workouts' }" 
+           @click.prevent="activeTab = 'saved-workouts'" 
+           href="#saved-workouts" 
+           role="tab">Saved Workouts</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="tab-content">
+    <div class="tab-pane" :class="{ 'show active': activeTab === 'my-workouts' }" role="tabpanel" id="my-workouts">
+      <div class="content-section">
+        <h3>My Workouts</h3>
+        {% if user_workouts %}
+          <div class="list-group">
+            {% for workout in user_workouts %}
+              <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1">
+                    <a href="{% url 'workouts-detail' workout.id %}">{{ workout.title }}</a>
+                  </h5>
+                  <small>{{ workout.created_at|date:"F d, Y" }}</small>
+                </div>
+                <p class="mb-1">{{ workout.description|truncatechars:100 }}</p>
+                
+                <div class="mt-2">
+                  {% if workout.difficulty %}
+                    <span class="badge badge-info">{{ workout.difficulty }}</span>
+                  {% endif %}
+                  
+                  {% if workout.muscle_group %}
+                    <span class="badge badge-primary">{{ workout.muscle_group }}</span>
+                  {% endif %}
+                </div>
+                
+                <div class="mt-2">
+                  <a href="{% url 'workouts-update' workout.id %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                  <a href="{% url 'workouts-delete' workout.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="alert alert-info">
+            You haven't created any workouts yet. <a href="{% url 'workouts-create' %}">Create your first workout!</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    <div class="tab-pane" :class="{ 'show active': activeTab === 'saved-workouts' }" role="tabpanel" id="saved-workouts">
+      <div class="content-section">
+        <h3>Saved Workouts</h3>
+        {% if saved_workouts %}
+          <div class="list-group">
+            {% for saved in saved_workouts %}
+              <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1">
+                    <a href="{% url 'workouts-detail' saved.workout.id %}">{{ saved.workout.title }}</a>
+                  </h5>
+                  <small>Saved on {{ saved.saved_at|date:"F d, Y" }}</small>
+                </div>
+                <p class="mb-1">{{ saved.workout.description|truncatechars:100 }}</p>
+                
+                <div class="mt-2">
+                  {% if saved.workout.difficulty %}
+                    <span class="badge badge-info">{{ saved.workout.difficulty }}</span>
+                  {% endif %}
+                  
+                  {% if saved.workout.muscle_group %}
+                    <span class="badge badge-primary">{{ saved.workout.muscle_group }}</span>
+                  {% endif %}
+                </div>
+                
+                <div class="mt-2">
+                  <small class="text-muted">Created by: {{ saved.workout.author.username }}</small>
+                  <a href="{% url 'workouts-unsave' saved.workout.id %}" 
+                     @click="confirmUnsave($event, '{{ saved.workout.id }}', '{{ saved.workout.title }}')"
+                     class="btn btn-sm btn-outline-warning float-right">Unsave</a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="alert alert-info">
+            You haven't saved any workouts yet. Browse workouts and click "Save Workout" to add them here.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function profilePage() {
+    return {
+      activeTab: 'my-workouts', 
+      
+      init() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab === 'saved') {
+          this.activeTab = 'saved-workouts';
+        }
+      },
+      
+      confirmUnsave(event, workoutId, workoutTitle) {
+        if (!confirm(`Are you sure you want to unsave "${workoutTitle}"?`)) {
+          event.preventDefault();
+        }
+      }
+    }
+  }
+</script>
+{% endblock content %}
