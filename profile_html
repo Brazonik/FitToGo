@@ -1,0 +1,233 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script defer src="https://unpkg.com/alpinejs@3.10.3/dist/cdn.min.js"></script>
+    <style>
+      body {margin-top: 5rem; background: #fafafa;}
+      .site-header .navbar-nav .nav-link {color: #cbd5db;}
+      .site-header .navbar-nav .nav-link:hover {color: #ffffff;}
+      .site-header .navbar-nav .nav-link.active {font-weight: 500;}
+      .content-section {background: #ffffff; padding: 10px 20px; border: 1px solid #dddddd; border-radius: 3px; margin-bottom: 20px;}
+      .article-title {color: #444444;}
+      .article-content {white-space: pre-line;}
+      .article-img {height: 65px; width: 65px; margin-right: 16px;}
+      .article-metadata {padding-bottom: 1px; margin-bottom: 4px; border-bottom: 1px solid #e3e3e3}
+      .article-metadata a:hover {color: #333; text-decoration: none;}
+      .article-svg {width: 25px; height: 25px; vertical-align: middle;}
+      .account-img {height: 125px; width: 125px; margin-right: 20px; margin-bottom: 16px;}
+      .account-heading {font-size: 2.5rem;}
+      .bg-steel {background-color: #5f788a;}
+    </style>
+    
+    <title>Fit To Go</title>
+    
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand mr-4" href="/">Fit To Go</a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbarToggle"
+            aria-controls="navbarToggle"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarToggle">
+            <div class="navbar-nav mr-auto">
+                <a class="nav-item nav-link" href="index.html">Home</a>
+                <a class="nav-item nav-link" href="about.html">About</a>
+            </div>
+            
+            <div class="navbar-nav">
+              
+                <a class="nav-item nav-link" href="profile.html">Profile</a>
+                
+                <form method="POST" action="/logout/" class="d-inline">
+                  <input type="hidden" name="csrfmiddlewaretoken" value="OaOBk4BfCCkTpQXSXdEWY4uAMSlAY3WQproH7TYK66S0UoNGSTMSbIDPO2pUcCYq">
+                  <button type="submit" class="btn btn-link nav-item nav-link" 
+                          style="background: none; border: none; margin: 0; padding: 0.5rem 1rem; color: #cbd5db;">
+                    Logout
+                  </button>
+                </form>
+              
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-8">
+          
+          
+<div x-data="profilePage()" class="container">
+  <div class="content-section">
+    <div class="media">
+      <div class="media-body">
+        <h2 class="account-heading">steven</h2>
+        <p class="text-secondary">steven@gmail.com</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" 
+           :class="{ 'active': activeTab === 'my-workouts' }" 
+           @click.prevent="activeTab = 'my-workouts'" 
+           href="#my-workouts" 
+           role="tab">My Workouts</a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" 
+           :class="{ 'active': activeTab === 'saved-workouts' }" 
+           @click.prevent="activeTab = 'saved-workouts'" 
+           href="#saved-workouts" 
+           role="tab">Saved Workouts</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="tab-content">
+    <div class="tab-pane" :class="{ 'show active': activeTab === 'my-workouts' }" role="tabpanel" id="my-workouts">
+      <div class="content-section">
+        <h3>My Workouts</h3>
+        
+          <div class="list-group">
+            
+              <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1">
+                    <a href="/workout/16/">Full Leg Workout – Strength &amp; Hypertrophy Focused</a>
+                  </h5>
+                  <small>March 16, 2025</small>
+                </div>
+                <p class="mb-1">1. Barbell Back Squat (Quads, Glutes, Hamstrings)
+4–5 sets × 5–8 reps
+Rest: 90 sec
+Tip: Keep cor…</p>
+                
+                <div class="mt-2">
+                  
+                    <span class="badge badge-info">Intermediate</span>
+                  
+                  
+                  
+                    <span class="badge badge-primary">Legs</span>
+                  
+                </div>
+                
+                <div class="mt-2">
+                  <a href="/workout/16/update" class="btn btn-sm btn-outline-secondary">Edit</a>
+                  <a href="/workout/16/delete" class="btn btn-sm btn-outline-danger">Delete</a>
+                </div>
+              </div>
+            
+          </div>
+        
+      </div>
+    </div>
+    
+    <div class="tab-pane" :class="{ 'show active': activeTab === 'saved-workouts' }" role="tabpanel" id="saved-workouts">
+      <div class="content-section">
+        <h3>Saved Workouts</h3>
+        
+          <div class="list-group">
+            
+              <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1">
+                    <a href="/workout/15/">Full Arm Workout Routine</a>
+                  </h5>
+                  <small>Saved on March 16, 2025</small>
+                </div>
+                <p class="mb-1">1. Barbell Bicep Curls (Biceps)
+4 sets × 8–12 reps
+Rest: 60 sec
+Tip: Keep elbows locked, don’t s…</p>
+                
+                <div class="mt-2">
+                  
+                    <span class="badge badge-info">Intermediate</span>
+                  
+                  
+                  
+                    <span class="badge badge-primary">Arms</span>
+                  
+                </div>
+                
+                <div class="mt-2">
+                  <small class="text-muted">Created by: anikm</small>
+                  <a href="/workout/15/unsave/" 
+                     @click="confirmUnsave($event, '15', 'Full Arm Workout Routine')"
+                     class="btn btn-sm btn-outline-warning float-right">Unsave</a>
+                </div>
+              </div>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function profilePage() {
+    return {
+      activeTab: 'my-workouts', 
+      
+      init() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab === 'saved') {
+          this.activeTab = 'saved-workouts';
+        }
+      },
+      
+      confirmUnsave(event, workoutId, workoutTitle) {
+        if (!confirm(`Are you sure you want to unsave "${workoutTitle}"?`)) {
+          event.preventDefault();
+        }
+      }
+    }
+  }
+</script>
+
+        </div>
+        <div class="col-md-4">
+          <div class="content-section">
+            <h3>Workout Options</h3>
+            <p class='text-muted'>
+              <ul class="list-group">
+                <li class="list-group-item list-group-item-light"><a href="index.html">Latest Workouts</a>
+                    <a class="nav-item nav-link" href="create-workout.html">New Workout</a>
+                <li class="list-group-item list-group-item-light"><a href="/about/">About</a></li>
+              </ul>
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,195 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script defer src="https://unpkg.com/alpinejs@3.10.3/dist/cdn.min.js"></script>
+    <style>
+      body {margin-top: 5rem; background: #fafafa;}
+      .site-header .navbar-nav .nav-link {color: #cbd5db;}
+      .site-header .navbar-nav .nav-link:hover {color: #ffffff;}
+      .site-header .navbar-nav .nav-link.active {font-weight: 500;}
+      .content-section {background: #ffffff; padding: 10px 20px; border: 1px solid #dddddd; border-radius: 3px; margin-bottom: 20px;}
+      .article-title {color: #444444;}
+      .article-content {white-space: pre-line;}
+      .article-img {height: 65px; width: 65px; margin-right: 16px;}
+      .article-metadata {padding-bottom: 1px; margin-bottom: 4px; border-bottom: 1px solid #e3e3e3}
+      .article-metadata a:hover {color: #333; text-decoration: none;}
+      .article-svg {width: 25px; height: 25px; vertical-align: middle;}
+      .account-img {height: 125px; width: 125px; margin-right: 20px; margin-bottom: 16px;}
+      .account-heading {font-size: 2.5rem;}
+      .bg-steel {background-color: #5f788a;}
+    </style>
+    
+    <title>Fit To Go</title>
+    
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand mr-4" href="/">Fit To Go</a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbarToggle"
+            aria-controls="navbarToggle"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarToggle">
+            <div class="navbar-nav mr-auto">
+                <a class="nav-item nav-link" href="index.html">Home</a>
+                <a class="nav-item nav-link" href="about.html">About</a>
+            </div>
+            
+            <div class="navbar-nav">
+              
+                <a class="nav-item nav-link" href="login.html">Login</a>
+                <a class="nav-item nav-link" href="register.html">Register</a>
+              
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-8">
+          
+          
+<div x-data="loginForm()" class="content-section">
+  <form @submit.prevent="submitForm">
+    <input type="hidden" name="csrfmiddlewaretoken" value="tlSvng4631091JeIfTD40vjbGHRJ5gDO4CsBa5rBxvygwh4wazL0d9sqIRV3jPFo">
+    <fieldset class="form-group">
+      <legend class="border-bottom mb-4">Log In</legend>
+      <div id="div_id_username" class="form-group">
+        <label for="id_username" class="control-label">Username</label>
+        <div class="controls">
+          <input type="text" name="username" id="id_username" 
+                 class="textinput textInput form-control" 
+                 x-model="username" required>
+        </div>
+      </div>
+      <div id="div_id_password" class="form-group">
+        <label for="id_password" class="control-label">Password</label>
+        <div class="controls">
+          <input type="password" name="password" id="id_password" 
+                 class="textinput textInput form-control" 
+                 x-model="password" required>
+        </div>
+      </div>
+    </fieldset>
+    
+    <div class="form-group py-3">
+      <button class="btn btn-outline-info" type="submit" :disabled="isSubmitting">
+        <span x-show="isSubmitting" class="spinner-border spinner-border-sm mr-2" role="status"></span>
+        <span x-text="isSubmitting ? 'Logging in...' : 'Login'"></span>
+      </button>
+      <small class="text-muted ml-2">
+        <a href="/password-reset/">Forgot Password?</a>
+      </small>
+    </div>
+    
+    <div x-show="errors.length > 0" class="alert alert-danger">
+      <template x-for="error in errors" :key="error">
+        <p x-text="error"></p>
+      </template>
+    </div>
+  </form>
+  
+  <div class="border-top pt-3">
+    <a class="text-muted" href="/register/">Don't have an account? Sign up.</a>
+  </div>
+</div>
+
+<script>
+function loginForm() {
+  return {
+    username: '',
+    password: '',
+    isSubmitting: false,
+    errors: [],
+    
+    async submitForm() {
+      this.isSubmitting = true;
+      this.errors = [];
+      
+      if (!this.username) {
+        this.errors.push('Username is required');
+      }
+      
+      if (!this.password) {
+        this.errors.push('Password is required');
+      }
+      
+      if (this.errors.length > 0) {
+        this.isSubmitting = false;
+        return;
+      }
+      
+      try {
+        const formData = new FormData();
+        formData.append('username', this.username);
+        formData.append('password', this.password);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        console.log("Submitting login with username:", this.username);
+        
+        const response = await fetch('/api/login/', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+        
+        const result = await response.json();
+        console.log("Login response:", result);
+        
+        if (response.ok) {
+          window.location.href = result.redirect || '/';
+        } else {
+          this.errors = result.errors || ['Login failed. Please try again.'];
+        }
+      } catch (error) {
+        console.error("Login error:", error);
+        this.errors = ['Network error. Please check your connection.'];
+      } finally {
+        this.isSubmitting = false;
+      }
+    }
+  };
+}
+</script>
+
+        </div>
+        <div class="col-md-4">
+          <div class="content-section">
+            <h3>Workout Options</h3>
+            <p class='text-muted'>
+              <ul class="list-group">
+                <li class="list-group-item list-group-item-light"><a href="/">Latest Workouts</a></li>
+                <li class="list-group-item list-group-item-light"><a href="/workout/create">New Workout</a></li>
+                <li class="list-group-item list-group-item-light"><a href="/about/">About</a></li>
+              </ul>
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"></script>
+  </body>
+</html>
