@@ -340,7 +340,6 @@ def rate_workout_api(request, pk):
     try:
         workout = Workout.objects.get(pk=pk)
         
-        # Don't allow authors to rate their own workouts
         if workout.author == request.user:
             return JsonResponse({'error': 'You cannot rate your own workout'}, status=400)
         
@@ -350,7 +349,6 @@ def rate_workout_api(request, pk):
             
         review = request.POST.get('review', '')
         
-        # Update or create the rating
         rating, created = WorkoutRating.objects.update_or_create(
             user=request.user,
             workout=workout,
