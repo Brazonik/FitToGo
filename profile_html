@@ -53,6 +53,7 @@
             <div class="navbar-nav mr-auto">
                 <a class="nav-item nav-link" href="index.html">Home</a>
                 <a class="nav-item nav-link" href="about.html">About</a>
+
             </div>
             
             <div class="navbar-nav">
@@ -217,9 +218,12 @@ Tip: Keep elbows locked, don’t s…</p>
             <h3>Workout Options</h3>
             <p class='text-muted'>
               <ul class="list-group">
-                <li class="list-group-item list-group-item-light"><a href="index.html">Latest Workouts</a>
-                    <a class="nav-item nav-link" href="create-workout.html">New Workout</a>
-                <li class="list-group-item list-group-item-light"><a href="/about/">About</a></li>
+                <ul class="list-group">
+                    <li class="list-group-item list-group-item-light"><a href="index.html">Latest Workouts</a></li>
+                    <li class="list-group-item list-group-item-light"><a href="create-workout.html">New Workout</a></li>
+                    <li class="list-group-item list-group-item-light"><a href="about.html">About</a></li>
+                  </ul>
+                  
               </ul>
             </p>
           </div>
