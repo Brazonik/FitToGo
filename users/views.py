@@ -50,14 +50,12 @@ def get_csrf_token(request):
 @csrf_protect
 def api_login(request):
     """API endpoint for login"""
-    # Debug information
     print("API Login called")
     print(f"POST data: {request.POST}")
     
     username = request.POST.get('username')
     password = request.POST.get('password')
     
-    # Validate input
     if not username:
         return JsonResponse({
             'success': False, 
@@ -70,14 +68,13 @@ def api_login(request):
             'errors': ['Password is required']
         }, status=400)
     
-    # Authenticate user
     user = authenticate(request, username=username, password=password)
     
     if user is not None:
         login(request, user)
         return JsonResponse({
             'success': True,
-            'redirect': '/',  # Default redirect to home
+            'redirect': '/',  
             'username': user.username
         })
     else:

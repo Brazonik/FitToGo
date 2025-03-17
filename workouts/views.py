@@ -118,13 +118,11 @@ class WorkoutDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.request.user == workout.author
     
     def delete(self, request, *args, **kwargs):
-        # Check if this is an AJAX request
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             self.object = self.get_object()
             self.object.delete()
             return JsonResponse({'success': True})
         else:
-            # Standard form submission
             return super().delete(request, *args, **kwargs)
 
 class AddExerciseForm(forms.ModelForm):
@@ -193,7 +191,6 @@ def rate_workout(request, pk):
 def save_workout(request, pk):
     workout = get_object_or_404(Workout, pk=pk)
     
-    # Check if already saved
     if SavedWorkout.objects.filter(user=request.user, workout=workout).exists():
         messages.info(request, f"You've already saved '{workout.title}'")
     else:
